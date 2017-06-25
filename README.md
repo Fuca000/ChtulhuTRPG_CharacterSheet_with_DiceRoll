@@ -1,0 +1,2 @@
+# ChtulhuTRPG_CharacterSheet_with_DiceRoll
+クトゥルフTRPGセッションを行うためのキャラシ―トHTMLです。

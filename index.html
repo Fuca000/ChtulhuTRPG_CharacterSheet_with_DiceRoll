@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Character Sheet Maker</title>
+  </head>
+  <body>
+    <style>
+      #dice {
+        margin-top: 15px;
+      }
+      #roll, #ddd, #face, #roll_dice{
+        height: 30px;
+      }
+      #profile_text {
+        margin-top: 20px;
+      }
+      #location {
+        margin-top: 15px;
+      }
+      #location button{
+        margin: 5px 5px;
+        height: 40px;
+        width: 130px;
+        font-size: 62%;
+      }
+    </style>
+    <input type="file" id="files" />
+    <form id="dice">
+      <select id="roll" name="roll">
+        <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="8">8</option>
+          <option value="10">10</option>
+        </select>
+        <span id="ddd">D</span>
+        <select id="face" name="face">
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="12">12</option>
+          <option value="20">20</option>
+          <option value="100">100</option>
+        </select>
+        <input type="button" id="roll_dice" value="roll" onclick="getDice();" />
+    </form>
+
+    <script>
+      function readFile(){
+        let files = document.getElementById("files").files;
+        if(!files.length){
+          alert("Please select a file!(UTF-8)")
+          return;
+        }
+        let file = files[0];
+
+        // 各系統技能
+        let fightSkill = false;
+        let serchSkill = false;
+        let actionSkill = false;
+        let negoSkill = false;
+        let knowSkill = false;
+
+        // ■技能■
+        let skill_flag = false;
+        // ■戦闘■
+        let fight_flag = false;
+
+        let reader = new FileReader();
+        reader.onloadend = function(evt){
+          if(evt.target.readyState === FileReader.DONE){
+            let str = (evt.target.result).split('\n');
+            for(let i=0; i<str.length; i++){
+              let skill = str[i].match("■技能■");
+              if(skill) skill_flag = true;
+
+              let fight_items = str[i].match("■戦闘■");
+              if(fight_items) fight_flag = true;
+
+              if(fight_items){ break; }
+              else if(skill_flag){
+                whichSkill(str[i]);
+                let spStr = str[i].split('　');
+                for(let j=0; j<spStr.length; j++){
+                 let mStr = match_str(spStr[j].replace(" ", ""));
+                 let val;
+                 if(mStr){
+                   while(j<spStr.length){
+                     val = match_num(spStr[j]);
+                     if(val !== null) break;
+                     j++;
+                   }
+                   if(val !== null) addButton(mStr, val, mStr+' '+val);
+                 }
+                }
+              }
+              else {
+                let profile = str[i];
+                let p_element = document.createElement("div");
+                p_element.innerHTML = profile;
+                let prof_parent_obj = document.getElementById("profile_text");
+                prof_parent_obj.appendChild(p_element);
+              }
+            }
+          }
+        };
+        reader.readAsText(file);
+      }
+      // 文字にマッチ
+      function match_str(str){
+        let re = new RegExp("[^0-9]{1,10}");
+        let text_array = str.match(re);
+        return text_array;
+      }
+      // 数字にマッチ
+      function match_num(str){
+        let re = new RegExp("[0-9]+");
+        let text_array = str.match(re);
+        return text_array;
+      }
+      // ボタンを追加
+      function addButton(id, value, name){
+        let button = `<button onclick="roll(${value}, '${name}')" id="${id}" value=${value}>${name}</button>`;
+        let span_element = document.createElement("span");
+        span_element.innerHTML = button;
+        let parent_obj = document.getElementById("location");
+        parent_obj.appendChild(span_element);
+      }
+      // ダイスを振る
+      function roll(value, name){
+        let rand = Math.floor(Math.random()*100);
+        let judge;
+        if(rand <= value) judge = "成功！";
+        else judge = "失敗！";
+        alert(name+" → "+rand+"  "+judge);
+        console.log(name+" → "+rand+"  "+judge);
+      }
+      // ダイスを振る
+      function getDice(){
+        let select = document.getElementById("roll");
+        let options = select.options;
+        let roll_value = parseInt(options.item(options.selectedIndex).value);
+
+        let select_face = document.getElementById("face");
+        let options_face = select_face.options;
+        let face_value = parseInt(options_face.item(options_face.selectedIndex).value);
+        let dice_value = 0;
+        for(let i=0; i<roll_value; i++){
+          let rand = Math.floor(Math.random()*face_value)+1;
+          dice_value += rand;
+        }
+        console.log(roll_value+"D"+face_value+" → "+dice_value);
+        alert(roll_value+"D"+face_value+" → "+dice_value);
+      }
+      // スキル系統を表示
+      function whichSkill(str){
+        let skill_type;
+        let re_skill = new RegExp("----- ..... -----");
+        skill_type = str.match(re_skill);
+        if(skill_type){
+          let div_element = document.createElement("div");
+          div_element.innerHTML = "<br>"+skill_type+"</br>";
+          let parent_obj = document.getElementById("location");
+          parent_obj.appendChild(div_element);
+        }
+      }
+      document.getElementById("files").addEventListener("change", readFile, false);
+    </script>
+
+    <div id="profile_text"></div>
+    <div id="location"></div>
+  </body>
+</html>

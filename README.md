@@ -3,4 +3,4 @@
 
 キャラクター保管所で作成したキャラシートを、UTF-8形式で保存したtxtファイルを選択することで、ダイスロール可能なキャラシートを表示します。
 
-[キャラクター保管所]:http://charasheet.vampire-blood.net/coc_pc_making.html
+キャラクター保管所:http://charasheet.vampire-blood.net/coc_pc_making.html

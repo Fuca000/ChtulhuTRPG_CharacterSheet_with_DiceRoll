@@ -24,9 +24,12 @@
         width: 130px;
         font-size: 62%;
       }
+      #files {
+        margin-top: 20px;
+        margin-bottom: 20px;
+      }
     </style>
-    <input type="file" id="files" />
-    // ダイスロール
+
     <form id="dice">
       <select id="roll" name="roll">
         <option value="1">1</option>
@@ -56,15 +59,40 @@
         <input type="button" id="roll_dice" value="roll" onclick="getDice();" />
     </form>
 
+    <div id="profile_text"></div>
+    <div id="location"></div>
+    <input type="file" id="files" />
+    <br />
+    <from id="input_text">
+      キャラシート文字入力：<br/>
+      <textarea rows="4" id="text">ここにキャラシートを入力してください。</textarea><br/>
+      <input type="button" id="text_submit" value="完了" onclick="readText();" />
+    </from>
+
     <script>
-      function readFile(){
+      function readText(){
+        let text = document.getElementById("text").value;
+        if(!text.length){
+          alert("Please input character sheet!");
+          return;
+        }
+        let blob = new Blob([text], {type : 'text/plain'});
+        readFile(blob);
+        document.getElementById("files").style.display = "none";
+        document.getElementById("input_text").style.display = "none";
+      }
+      function readFileText(){
         let files = document.getElementById("files").files;
         if(!files.length){
           alert("Please select a file!(UTF-8)")
           return;
         }
         let file = files[0];
-
+        readFile(file);
+        document.getElementById("files").style.display = "none";
+        document.getElementById("input_text").style.display = "none";
+      }
+      function readFile(file){
         // 各系統技能
         let fightSkill = false;
         let serchSkill = false;
@@ -175,10 +203,8 @@
           parent_obj.appendChild(div_element);
         }
       }
-      document.getElementById("files").addEventListener("change", readFile, false);
+      document.getElementById("files").addEventListener("change", readFileText, false);
     </script>
 
-    <div id="profile_text"></div>
-    <div id="location"></div>
   </body>
 </html>

@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Character Sheet Maker</title>
+    <title>Character Sheet Tool</title>
   </head>
   <body>
     <style>
@@ -65,7 +65,7 @@
     <br />
     <from id="input_text">
       キャラシート文字入力：<br/>
-      <textarea rows="4" id="text">ここにキャラシートを入力してください。</textarea><br/>
+      <textarea rows="4" cols="30" id="text" placeholder="キャラシートを文字で入力"></textarea><br/>
       <input type="button" id="text_submit" value="完了" onclick="readText();" />
     </from>
 
@@ -73,7 +73,7 @@
       function readText(){
         let text = document.getElementById("text").value;
         if(!text.length){
-          alert("Please input character sheet!");
+          alert("Please input a character sheet!");
           return;
         }
         let blob = new Blob([text], {type : 'text/plain'});
@@ -84,7 +84,7 @@
       function readFileText(){
         let files = document.getElementById("files").files;
         if(!files.length){
-          alert("Please select a file!(UTF-8)")
+          alert("Please select a text file!(UTF-8)")
           return;
         }
         let file = files[0];

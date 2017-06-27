@@ -135,6 +135,17 @@
               }
               else {
                 let profile = str[i];
+                // HP等の変動値
+                if(profile.match("HP：")||profile.match("MP：")||profile.match("SAN：")){
+                  let idx = profile.indexOf("：");
+                  let prof_value = parseInt(profile.slice(idx+1));
+                  let opt = "";
+                  for(let i=0; i<99; i++){
+                    if(i+1 === prof_value) opt += opt += "<option selected>"+(i+1)+"</option>";
+                    else opt += "<option>"+(i+1)+"</option>";
+                  }
+                  profile = profile.slice(0, idx+1)+"<select>"+prof_value+opt+"</select>";
+                }
                 let p_element = document.createElement("div");
                 p_element.innerHTML = profile;
                 let prof_parent_obj = document.getElementById("profile_text");

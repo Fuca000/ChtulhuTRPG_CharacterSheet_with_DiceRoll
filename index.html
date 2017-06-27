@@ -84,7 +84,7 @@
       function readFileText(){
         let files = document.getElementById("files").files;
         if(!files.length){
-          alert("Please select a text file!(shift-jis)")
+          alert("Please select a text file!(UTF-8)")
           return;
         }
         let file = files[0];
@@ -156,7 +156,7 @@
             }
           }
         };
-        reader.readAsText(file, "shift-jis");
+        reader.readAsText(file);
       }
       // 文字にマッチ
       function match_str(str){

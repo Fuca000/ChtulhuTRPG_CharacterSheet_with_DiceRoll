@@ -84,7 +84,7 @@
       function readFileText(){
         let files = document.getElementById("files").files;
         if(!files.length){
-          alert("Please select a text file!(UTF-8)")
+          alert("Please select a text file!(shift-jis)")
           return;
         }
         let file = files[0];
@@ -108,7 +108,9 @@
         let reader = new FileReader();
         reader.onloadend = function(evt){
           if(evt.target.readyState === FileReader.DONE){
-            let str = (evt.target.result).split('\n');
+            let result = evt.target.result;
+
+            let str = result.split('\n');
             for(let i=0; i<str.length; i++){
               let skill = str[i].match("■技能■");
               if(skill) skill_flag = true;
@@ -154,7 +156,7 @@
             }
           }
         };
-        reader.readAsText(file);
+        reader.readAsText(file, "shift-jis");
       }
       // 文字にマッチ
       function match_str(str){

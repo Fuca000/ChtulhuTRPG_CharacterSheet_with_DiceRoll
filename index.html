@@ -159,9 +159,9 @@
           }
         };
         let text_area = document.getElementById("text").value;
+        let char;
         if(!text_area){
           char_code = document.getElementById("char_code");
-          let char;
           for(let i=0; i<char_code.code.length; i++){
             if(char_code.code[i].checked)
               char = char_code.code[i].value;

@@ -32,7 +32,7 @@
 
     <form id="dice">
       <select id="roll" name="roll">
-        <option value="1">1</option>
+        <option value="1" selected>1</option>
           <option value="2">2</option>
           <option value="3">3</option>
           <option value="4">4</option>
@@ -54,13 +54,18 @@
           <option value="10">10</option>
           <option value="12">12</option>
           <option value="20">20</option>
-          <option value="100">100</option>
+          <option value="100" selected>100</option>
         </select>
         <input type="button" id="roll_dice" value="roll" onclick="getDice();" />
     </form>
 
     <div id="profile_text"></div>
     <div id="location"></div>
+    <form id="char_code">
+      <input type="radio" id="jis" name="code" value="shift-JIS" checked/>:shift-JIS
+      <input type="radio" id="utf" name="code" value="UTF-8" />:UTF-8
+      <br />
+    </form>
     <input type="file" id="files" />
     <br />
     <from id="input_text">
@@ -87,18 +92,11 @@
           alert("Please select a text file!(UTF-8)")
           return;
         }
-        let file = files[0];
-        readFile(file);
+        readFile(files[0]);
         document.getElementById("files").style.display = "none";
         document.getElementById("input_text").style.display = "none";
       }
       function readFile(file){
-        // 各系統技能
-        let fightSkill = false;
-        let serchSkill = false;
-        let actionSkill = false;
-        let negoSkill = false;
-        let knowSkill = false;
 
         // ■技能■
         let skill_flag = false;
@@ -112,13 +110,12 @@
 
             let str = result.split('\n');
             for(let i=0; i<str.length; i++){
-              let skill = str[i].match("■技能■");
-              if(skill) skill_flag = true;
+              // "■技能■" 以上 "■戦闘■" 以下
+              if(str[i].includes("■技能■")) skill_flag = true;
+              // "■戦闘■" 以下
+              if(str[i].includes("■戦闘■")) fight_flag = true;
 
-              let fight_items = str[i].match("■戦闘■");
-              if(fight_items) fight_flag = true;
-
-              if(fight_items){ break; }
+              if(fight_flag){ break; }
               else if(skill_flag){
                 whichSkill(str[i]);
                 let spStr = str[i].split('　');
@@ -138,11 +135,16 @@
               else {
                 let profile = str[i];
                 // HP等の変動値
-                if(profile.match("HP：")||profile.match("MP：")||profile.match("SAN：")){
+                if(profile.match("HP：|MP：|SAN：")){
                   let idx = profile.indexOf("：");
                   let prof_value = parseInt(profile.slice(idx+1));
                   let opt = "";
                   for(let i=0; i<99; i++){
+                    if(profile.includes("SAN：")) {
+                      if((parseInt(profile[7]) !== NaN)&&(parseInt(profile[8]) !== NaN)){
+                        if((parseInt(profile[7])*10+parseInt(profile[8])) === i) break;
+                      }
+                    }
                     if(i+1 === prof_value) opt += opt += "<option selected>"+(i+1)+"</option>";
                     else opt += "<option>"+(i+1)+"</option>";
                   }
@@ -156,7 +158,17 @@
             }
           }
         };
-        reader.readAsText(file);
+        let text_area = document.getElementById("text").value;
+        if(!text_area){
+          char_code = document.getElementById("char_code");
+          let char;
+          for(let i=0; i<char_code.code.length; i++){
+            if(char_code.code[i].checked)
+              char = char_code.code[i].value;
+          }
+        }
+        else char = "UTF-8";
+        reader.readAsText(file, char);
       }
       // 文字にマッチ
       function match_str(str){
@@ -180,7 +192,9 @@
       }
       // ダイスを振る
       function roll(value, name){
-        let rand = Math.floor(Math.random()*100);
+        let rand = 10*(Math.floor(Math.random()*9)) + 1*(Math.floor(Math.random()*9));
+        // 100ファンブル
+        if(rand === 0) rand = 100;
         let judge;
         if(rand <= value) judge = "成功！";
         else judge = "失敗！";
@@ -198,7 +212,15 @@
         let face_value = parseInt(options_face.item(options_face.selectedIndex).value);
         let dice_value = 0;
         for(let i=0; i<roll_value; i++){
-          let rand = Math.floor(Math.random()*face_value)+1;
+          let rand;
+          if(face_value === 100) {
+            rand = 10*(Math.floor(Math.random()*9)) + 1*(Math.floor(Math.random()*9));
+            // 100クリティカル
+            if(rand === 0) rand = 100;
+          }
+          else {
+            rand = Math.floor(Math.random()*face_value)+1;
+          }
           dice_value += rand;
         }
         console.log(roll_value+"D"+face_value+" → "+dice_value);
@@ -207,8 +229,7 @@
       // スキル系統を表示
       function whichSkill(str){
         let skill_type;
-        let re_skill = new RegExp("----- ..... -----");
-        skill_type = str.match(re_skill);
+        skill_type = str.match("----- ..... -----");
         if(skill_type){
           let div_element = document.createElement("div");
           div_element.innerHTML = "<br>"+skill_type+"</br>";

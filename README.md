@@ -6,7 +6,7 @@
 - キャラクター保管所: http://charasheet.vampire-blood.net/coc_pc_making.html
 
 
-#ScreenShot
+# ScreenShot
 ![ScreenShot1](https://github.com/Fuca000/ChtulhuTRPG_CharacterSheet_with_DiceRoll/blob/master/images/characterSheetIntro1.png "ScreenShot1")
 
 ![ScreenShot2](https://github.com/Fuca000/ChtulhuTRPG_CharacterSheet_with_DiceRoll/blob/master/images/characterSheetIntro2.png "ScreenShot2")

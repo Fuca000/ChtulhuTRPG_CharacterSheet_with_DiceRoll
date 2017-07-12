@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Character Sheet Tool</title>
+  </head>
+  <body>
+    <style>
+      #dice {
+        margin-top: 15px;
+      }
+      #roll, #ddd, #face, #roll_dice{
+        height: 30px;
+      }
+      #profile_text {
+        margin-top: 20px;
+      }
+      #location {
+        margin-top: 15px;
+      }
+      #location button{
+        margin: 5px 5px;
+        height: 40px;
+        width: 130px;
+        font-size: 62%;
+      }
+      #files {
+        margin-top: 20px;
+        margin-bottom: 20px;
+      }
+    </style>
+
+    <form id="dice">
+      <select id="roll" name="roll">
+        <option value="1" selected>1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="8">8</option>
+          <option value="10">10</option>
+        </select>
+        <span id="ddd">D</span>
+        <select id="face" name="face">
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="12">12</option>
+          <option value="20">20</option>
+          <option value="100" selected>100</option>
+        </select>
+        <input type="button" id="roll_dice" value="roll" onclick="getDice();" />
+    </form>
+
+    <div id="profile_text"></div>
+    <div id="location"></div>
+    <form id="char_code">
+      <input type="radio" id="jis" name="code" value="shift-JIS" checked/>
+      <label id="label_jis" for="jis">:shift-JIS</label>
+      <input type="radio" id="utf" name="code" value="UTF-8">
+      <label id="label_utf" for="utf">:UTF-8</label>
+      </input>
+      <br />
+    </form>
+    <input type="file" id="files" />
+    <br />
+    <from id="input_text">
+      キャラシート文字入力：<br/>
+      <textarea rows="4" cols="30" id="text" placeholder="キャラシートを文字で入力"></textarea><br/>
+      <input type="button" id="text_submit" value="完了" onclick="readText();" />
+    </from>
+
+    <script>
+      function readText(){
+        let text = document.getElementById("text").value;
+        if(!text.length){
+          alert("Please input a character sheet!");
+          return;
+        }
+        let blob = new Blob([text], {type : 'text/plain'});
+        readFile(blob);
+      }
+      function readFileText(){
+        let files = document.getElementById("files").files;
+        if(!files.length){
+          alert("Please select a text file!(UTF-8)")
+          return;
+        }
+        readFile(files[0]);
+      }
+      function readFile(file){
+
+        // ■技能■
+        let skill_flag = false;
+        // ■戦闘■
+        let fight_flag = false;
+
+        let reader = new FileReader();
+        reader.onloadend = function(evt){
+          if(evt.target.readyState === FileReader.DONE){
+            let result = evt.target.result;
+
+            let str = result.split('\n');
+            for(let i=0; i<str.length; i++){
+              // "■技能■" 以上 "■戦闘■" 以下
+              if(str[i].includes("■技能■")) skill_flag = true;
+              // "■戦闘■" 以下
+              if(str[i].includes("■戦闘■")) fight_flag = true;
+
+              if(fight_flag){ break; }
+              else if(skill_flag){
+                whichSkill(str[i]);
+                let spStr = str[i].split('　');
+                for(let j=0; j<spStr.length; j++){
+                 let mStr = match_str(spStr[j].replace(" ", ""));
+                 let val;
+                 if(mStr){
+                   while(j<spStr.length){
+                     val = match_num(spStr[j]);
+                     if(val !== null) break;
+                     j++;
+                   }
+                   if(val !== null) addButton(mStr, val, mStr+' '+val);
+                 }
+                }
+              }
+              else {
+                let profile = str[i];
+                // HP等の変動値
+                if(profile.match("HP：|MP：|SAN：")){
+                  let idx = profile.indexOf("：");
+                  let prof_value = parseInt(profile.slice(idx+1));
+                  let opt = "";
+                  for(let i=0; i<99; i++){
+                    if(profile.includes("SAN：")) {
+                      if((parseInt(profile[7]) !== NaN)&&(parseInt(profile[8]) !== NaN)){
+                        if((parseInt(profile[7])*10+parseInt(profile[8])) === i) break;
+                      }
+                    }
+                    if(i+1 === prof_value) opt += opt += "<option selected>"+(i+1)+"</option>";
+                    else opt += "<option>"+(i+1)+"</option>";
+                  }
+                  profile = profile.slice(0, idx+1)+"<select>"+prof_value+opt+"</select>";
+                }
+                else if(profile.includes("=合計=")){
+                  let status = profile.split("　");
+                  let mosta = [];
+                  for(let i=0; i<status.length; i++){
+                    if(!isNaN(parseInt(status[i]))) mosta.push(status[i]);
+                  }
+                  for(let i=0; i<mosta.length; i++){
+                    let v = mosta[i]*5;
+                    if(i===2){
+                      addButton("pow", v, "幸運"+" "+v);
+                    }
+                    else if(i===6){
+                      addButton("int", v, "アイディア"+" "+v);
+                    }
+                    else if (i===7) {
+                      addButton("edu", v, "知識"+" "+v);
+                    }
+                  }
+                  console.log(mosta);
+                }
+                let p_element = document.createElement("div");
+                p_element.innerHTML = profile;
+                let prof_parent_obj = document.getElementById("profile_text");
+                prof_parent_obj.appendChild(p_element);
+              }
+            }
+          }
+        };
+        let text_area = document.getElementById("text").value;
+        let char;
+        if(!text_area){
+          char_code = document.getElementById("char_code");
+          for(let i=0; i<char_code.code.length; i++){
+            if(char_code.code[i].checked)
+              char = char_code.code[i].value;
+          }
+        }
+        else char = "UTF-8";
+        reader.readAsText(file, char);
+        document.getElementById("files").style.display = "none";
+        document.getElementById("input_text").style.display = "none";
+        document.getElementById("jis").style.display = "none";
+        document.getElementById("utf").style.display = "none";
+        document.getElementById("label_jis").style.display = "none";
+        document.getElementById("label_utf").style.display = "none";
+      }
+      // 文字にマッチ
+      function match_str(str){
+        let re = new RegExp("[^0-9]{1,10}");
+        let text_array = str.match(re);
+        return text_array;
+      }
+      // 数字にマッチ
+      function match_num(str){
+        let re = new RegExp("[0-9]+");
+        let text_array = str.match(re);
+        return text_array;
+      }
+      // ボタンを追加
+      function addButton(id, value, name){
+        let button = `<button onclick="roll(${value}, '${name}')" id="${id}" value=${value}>${name}</button>`;
+        let span_element = document.createElement("span");
+        span_element.innerHTML = button;
+        let parent_obj = document.getElementById("location");
+        parent_obj.appendChild(span_element);
+      }
+      // ダイスを振る
+      function roll(value, name){
+        let rand = 10*(Math.floor(Math.random()*9)) + 1*(Math.floor(Math.random()*9));
+        // 100ファンブル
+        if(rand === 0) rand = 100;
+        let judge;
+        if(rand <= value) judge = "成功！";
+        else judge = "失敗！";
+        alert(name+" → "+rand+"  "+judge);
+        console.log(name+" → "+rand+"  "+judge);
+      }
+      // ダイスを振る
+      function getDice(){
+        let select = document.getElementById("roll");
+        let options = select.options;
+        let roll_value = parseInt(options.item(options.selectedIndex).value);
+
+        let select_face = document.getElementById("face");
+        let options_face = select_face.options;
+        let face_value = parseInt(options_face.item(options_face.selectedIndex).value);
+        let dice_value = 0;
+        for(let i=0; i<roll_value; i++){
+          let rand;
+          if(face_value === 100) {
+            rand = 10*(Math.floor(Math.random()*9)) + 1*(Math.floor(Math.random()*9));
+            // 100クリティカル
+            if(rand === 0) rand = 100;
+          }
+          else {
+            rand = Math.floor(Math.random()*face_value)+1;
+          }
+          dice_value += rand;
+        }
+        console.log(roll_value+"D"+face_value+" → "+dice_value);
+        alert(roll_value+"D"+face_value+" → "+dice_value);
+      }
+      // スキル系統を表示
+      function whichSkill(str){
+        let skill_type;
+        skill_type = str.match("----- ..... -----");
+        if(skill_type){
+          let div_element = document.createElement("div");
+          div_element.innerHTML = "<br>"+skill_type+"</br>";
+          let parent_obj = document.getElementById("location");
+          parent_obj.appendChild(div_element);
+        }
+      }
+      document.getElementById("files").addEventListener("change", readFileText, false);
+      //created by Fuca.
+    </script>
+
+  </body>
+</html>
